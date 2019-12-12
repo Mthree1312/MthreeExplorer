@@ -21,7 +21,18 @@ var BlogSchema = new mongoose.Schema({
     body: String,
     created: {type: Date, default: Date.now}
 });
-
+// var userSchema = mongoose.Schema({
+//     local: {
+//         username: String,
+//         password: String
+//     },
+//     google: {
+//         id: String,
+//         token: String,
+//         email: String,
+//         name: String
+//     }
+// });
 var Blog = mongoose.model("Blog", BlogSchema)
 
 app.get("/", function(req, res){
@@ -100,146 +111,89 @@ app.delete("/blogs/:id", function(req, res){
     })
 })
 
-app.listen("3000", function(){
-    console.log("server has started!")
-});
-
-
-
 /* google auth code */
-var authConfig = require('./config/auth'),
-passport = require('passport'),
-GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+// var 
+//     passport = require('passport'), 
+//     GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
+// app.get('/auth/google', passport.authenticate('google', {scope: ['profile', 'email']}));
 
-
+// app.get('/auth/google/callback', 
+// 	  passport.authenticate('google', { successRedirect: '/profile',
+// 	                                      failureRedirect: '/' }));
 // Passport session setup.
 //
 //   For persistent logins with sessions, Passport needs to serialize users into
 //   and deserialize users out of the session. Typically, this is as simple as
 //   storing the user ID when serializing, and finding the user by ID when
 //   deserializing.
-passport.serializeUser(function(user, done) {
-    // done(null, user.id);
-    done(null, user);
-  });
+// passport.serializeUser(function(user, done) {
+//     // done(null, user.id);
+//     done(null, user);
+//   });
 
-  passport.deserializeUser(function(obj, done) {
-    // Users.findById(obj, done);
-    done(null, obj);
-  });
+// passport.deserializeUser(function(obj, done) {
+//     // Users.findById(obj, done);
+//     done(null, obj);
+//   });
 
-  let User = require('./config/user');
-  let configAuth = require('./config/auth');
+// let User = require('./config/user');
+// var configAuth = require('./config/auth');
   
 // Use the GoogleStrategy within Passport.
 //   Strategies in Passport require a `verify` function, which accept
 //   credentials (in this case, an accessToken, refreshToken, and Google
 //   profile), and invoke a callback with a user object.
 //   See http://passportjs.org/docs/configure#verify-callback
-passport.use(new GoogleStrategy(
+// passport.use(new GoogleStrategy(
 
     // Use the API access settings stored in ./config/auth.json. You must create
     // an OAuth 2 client ID and secret at: https://console.developers.google.com
 
     // authConfig.google,
-    {
-        clientID: configAuth.google.clientID,
-        clientSecret: configAuth.google.clientSecret,
-        callbackURL: configAuth.google.callbackURL
-    },  
-    function(accessToken, refreshToken, profile, done) {
+//     {
+//         clientID: configAuth.google.clientID,
+//         clientSecret: configAuth.google.clientSecret,
+//         callbackURL: configAuth.google.callbackURL
+//     },  
+//     function(accessToken, refreshToken, profile, done) {
   
-      // Typically you would query the database to find the user record
-      // associated with this Google profile, then pass that object to the `done`
-      // callback.
-      process.nextTick(function(){
-        User.findOne({'google.id': profile.id}, function(err, user){
-            if(err)
-                return done(err);
-            if(user)
-                return done(null, user);
-            else {
-                var newUser = new userschema();
-                newUser.google.id = profile.id;
-                newUser.google.token = accessToken;
-                newUser.google.name = profile.displayName;
-                newUser.google.email = profile.emails[0].value;
-                newUser.save(function(err){
-                    if(err)
-                        throw err;
-                    return done(null, newUser);
-                })
-                console.log(profile);
-            }
-        });
-    });
+      
+//       process.nextTick(function(){
+//         User.findOne({'google.id': profile.id}, function(err, user){
+//             if(err)
+//                 return done(err);
+//             if(user)
+//                 return done(null, user);
+//             else {
+//                 var newUser = new User();
+//                 newUser.google.id = profile.id;
+//                 newUser.google.token = accessToken;
+//                 newUser.google.name = profile.displayName;
+//                 newUser.google.email = profile.emails[0].value;
+//                 newUser.save(function(err){
+//                     if(err)
+//                         throw err;
+//                     return done(null, newUser);
+//                 })
+//                 console.log(profile);
+//             }
+//         });
+//     });
+//       return done(null, profile);
+// }
+// ));
 
 
-      return done(null, profile);
-    }
-  ));
+app.listen("3000", function(){
+    console.log("server has started!")
+});  
 
-
-  
-  var logger = require('morgan');
-  var cookieParser = require('cookie-parser');
-  var session = require('express-session');
-
-  app.use(logger('dev'));
-  app.use(cookieParser());
-  app.use(session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false
-  }));  
-
-  app.get('/login', function(req, res) {
-    res.render('login', {
-      user: req.user
-    });
-  });
+//   app.get('/login', function(req, res) {
+//     res.render('login', {
+//       user: req.user
+//     });
+//   });
 
 
   
-// GET /auth/google
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  The first step in Google authentication will involve
-//   redirecting the user to google.com.  After authorization, Google
-//   will redirect the user back to this application at /auth/google/callback
-app.get('/auth/google',
-passport.authenticate('google', { scope: ['profile', 'email' ] }));
-
-// GET /auth/google/callback
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  If authentication fails, the user will be redirected back to the
-//   login page.  Otherwise, the primary route function function will be called,
-//   which, in this example, will redirect the user to the home page.
-app.get('/auth/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: '/login'
-  }),
-  function(req, res) {
-    // Authenticated successfully
-    res.redirect('/');
-  });
-
-app.get('/account', ensureAuthenticated, function(req, res) {
-  res.render('account', {
-    user: req.user
-  });
-});
-
-app.get('/logout', function(req, res) {
-  req.logout();
-  res.redirect('/');
-}); 
-
-
-// Simple route middleware to ensure user is authenticated.
-function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.redirect('/login');
-  }

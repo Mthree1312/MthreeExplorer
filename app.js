@@ -8,6 +8,7 @@ var express = require('express'),
 //Database connection established
 mongoose.connect("mongodb+srv://Mthreeuser:Mthree123@cluster0-vuvjc.mongodb.net/test?retryWrites=true&w=majority", { useNewUrlParser: true })
 mongoose.set('useFindAndModify', false);
+
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
@@ -102,4 +103,4 @@ app.delete("/blogs/:id", function(req, res){
 
 app.listen("3000", function(){
     console.log("server has started!")
-})
+});  
